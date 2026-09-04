@@ -303,11 +303,13 @@
         const el = document.getElementById(elementId);
         const valUpper = value.toString().trim().toUpperCase();
         el.innerText = value;
-        if(valUpper === "MEMENUHI SYARAT" || valUpper === "SESUAI") {
+        // PENYESUAIAN WARNA YA/TIDAK DI SINI
+        if(valUpper === "MEMENUHI SYARAT" || valUpper === "SESUAI" || valUpper === "YA") {
             el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-200';
         } else if(valUpper === "APPROVE KORCAM" || valUpper.includes("PROSES")) {
             el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-amber-100 text-amber-700 border border-amber-200';
         } else {
+            // Semua nilai lain (TIDAK, TIDAK MEMENUHI SYARAT, dll) otomatis akan merah
             el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-rose-100 text-rose-700 border border-rose-200';
         }
       };
