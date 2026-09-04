@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cek Honor Termin II - SE26 BPS Lobar</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc; 
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px -5px rgba(59, 130, 246, 0.1);
+    }
+    /* Tom Select Customization for Indigo Theme */
+    .ts-control { padding: 0.875rem 1rem !important; border-radius: 0.75rem !important; border-color: #e2e8f0 !important; font-size: 0.95rem; background-color: #ffffff !important; min-height: 50px; transition: all 0.2s; }
+    .ts-control.focus { box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important; border-color: #6366f1 !important; }
+    .ts-dropdown { border-radius: 0.75rem !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; }
+    .ts-dropdown .option { padding: 12px 16px !important; border-bottom: 1px solid #f1f5f9; }
+    .ts-dropdown .option:hover, .ts-dropdown .active { background-color: #eef2ff !important; color: #4f46e5 !important; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen p-4 sm:p-6 flex justify-center items-start pt-10">
+
+  <div class="w-full max-w-xl relative">
+    
+    <!-- Header -->
+    <div class="text-center mb-8 relative z-10 animate-fade-in">
+      <div class="inline-block bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide mb-3 border border-indigo-200 shadow-sm">
+        INFO PEMBAYARAN TERMIN II
+      </div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Sensus Ekonomi 2026</h1>
+      <h2 class="text-lg font-semibold text-indigo-600 mt-1">BPS Kabupaten Lombok Barat</h2>
+      <p class="text-sm text-slate-500 mt-3 leading-relaxed px-4">
+        Silakan periksa kelayakan pencairan honor Termin II Anda serta status persetujuan dari Korcam.
+      </p>
+    </div>
+
+    <!-- Kotak Pencarian -->
+    <div class="glass-card p-6 rounded-3xl border border-slate-200 mb-6 relative animate-fade-in" style="animation-delay: 0.1s;">
+      <div class="flex justify-between items-end mb-2">
+        <label class="block text-sm font-semibold text-slate-700">Cari Nama Petugas</label>
+        <div id="loadingText" class="text-xs text-indigo-600 font-semibold flex items-center gap-1.5 animate-pulse hidden">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Memuat data...</span>
+        </div>
+      </div>
+      <div class="flex gap-2 items-start">
+        <div class="w-full relative">
+          <select id="searchInput" class="w-full" placeholder="Memuat daftar nama..." disabled><option value="">Memuat daftar nama...</option></select>
+        </div>
+        <button onclick="cariData()" id="btnCari" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-[13px] rounded-xl font-semibold transition-all flex items-center justify-center min-w-[90px] shadow-lg shadow-indigo-200 disabled:opacity-60 disabled:cursor-not-allowed">
+          Cari
+        </button>
+      </div>
+    </div>
+
+    <!-- Container Hasil -->
+    <div id="resultContainer" class="hidden">
+      
+      <!-- Identitas Card -->
+      <div class="glass-card p-5 rounded-2xl border border-slate-200 mb-4 flex justify-between items-center animate-fade-in">
+        <div>
+          <p class="text-[10px] font-bold text-slate-400 tracking-wider mb-1 uppercase">Identitas Petugas</p>
+          <h2 id="r_namaSingkat" class="text-xl font-extrabold text-slate-800 leading-tight">Nama</h2>
+        </div>
+        <div class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold border border-indigo-200" id="r_jabatan">Jabatan</div>
+      </div>
+
+      <!-- Kotak Status Utama -->
+      <div id="statusBox" class="p-6 rounded-3xl mb-4 text-center border relative overflow-hidden animate-fade-in" style="animation-delay: 0.1s;">
+        <div id="statusIcon" class="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3 text-white text-3xl font-black shadow-lg"></div>
+        <h3 id="statusTitle" class="text-xl font-black uppercase tracking-wide mb-2">STATUS</h3>
+        <p id="statusMessage" class="text-sm leading-relaxed font-medium px-2">Message here</p>
+      </div>
+
+      <!-- Detail Keterangan (Hanya muncul jika Memenuhi Syarat) -->
+      <div id="boxKeterangan" class="hidden glass-card border-2 border-indigo-100 rounded-2xl p-5 mb-4 shadow-sm animate-fade-in">
+        <div class="mb-4">
+          <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Keterangan Termin II</span>
+          <span id="d_keterangan" class="font-semibold text-slate-700 leading-relaxed block bg-indigo-50/50 p-3 rounded-lg border border-indigo-50">-</span>
+        </div>
+        <div>
+          <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Tanggal Penandatanganan Berkas</span>
+          <span id="d_tglBerkas" class="font-bold text-emerald-700 text-lg block">-</span>
+        </div>
+      </div>
+
+      <!-- Link Berkas (Hanya muncul jika Memenuhi Syarat) -->
+      <div id="btnLinkBerkas" class="hidden mb-4 animate-fade-in">
+        <a href="http://s.bps.go.id/buktifasihse26lobar" target="_blank" class="inline-flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+          Klik link ini untuk melengkapi berkas Termin II
+        </a>
+      </div>
+
+      <!-- Tombol Toggle Detail -->
+      <button onclick="toggleDetail()" id="btnToggleDetail" class="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3.5 rounded-2xl hover:bg-slate-50 transition-all mb-4 shadow-sm animate-fade-in flex items-center justify-center gap-2">
+        Cek Detail Hasil Syarat Pembayaran <span class="text-indigo-400">&darr;</span>
+      </button>
+
+      <!-- Rincian Syarat Detail Container -->
+      <div id="detailContainer" class="hidden pb-12 space-y-4">
+        
+        <!-- Info Rekening -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+            Informasi Rekening
+          </h4>
+          <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
+            <div class="text-slate-500">Kecamatan</div><div class="font-semibold text-right text-slate-800" id="d_kecamatan">-</div>
+            <div class="text-slate-500">Bank</div><div class="font-semibold text-right text-slate-800" id="d_bank">-</div>
+            <div class="text-slate-500">No Rekening</div><div class="font-semibold text-right text-slate-800" id="d_noRek">-</div>
+            <div class="text-slate-500">A.N. Rekening</div><div class="font-semibold text-right text-slate-800 truncate" id="d_namaRek">-</div>
+          </div>
+        </div>
+
+        <!-- Kesimpulan Syarat List -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Rincian Syarat Termin 2
+          </h4>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-sm border border-slate-100">
+              <span class="text-slate-600 font-medium">Syarat Draft</span><span id="d_syaratDraft" class="-">-</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-sm border border-slate-100">
+              <span class="text-slate-600 font-medium">Syarat Muatan</span><span id="d_syaratMuatan" class="-">-</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-sm border border-slate-100">
+              <span class="text-slate-600 font-medium">Syarat SLS</span><span id="d_syaratSls" class="-">-</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl text-sm border border-slate-100">
+              <span class="text-slate-600 font-medium">Syarat Korcam</span><span id="d_syaratKorcam" class="-">-</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================================
+    // URL WEB APP GOOGLE APPS SCRIPT SUDAH DIMASUKKAN DI SINI
+    // =====================================================================
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycwMTTDll8bC8u3ITQ2ct5ZelWvehROii0lW7CY9qWujWC0tElSO_WkRrztLRxoaZk/exec';
+    
+    let tomSelectInstance = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById('loadingText').classList.remove('hidden');
+
+      fetch(SCRIPT_URL + '?action=getDaftarNamaMitra')
+        .then(response => response.json())
+        .then(response => {
+          const selectEl = document.getElementById('searchInput');
+          if (response.success && response.data.length > 0) {
+            selectEl.innerHTML = '<option value="">Ketik untuk mencari namamu...</option>';
+            response.data.forEach(item => { selectEl.innerHTML += `<option value="${item.value}">${item.text}</option>`; });
+            selectEl.disabled = false;
+            document.getElementById('btnCari').disabled = false;
+            
+            tomSelectInstance = new TomSelect("#searchInput",{ create: false, sortField: { field: "text", direction: "asc" } });
+            
+            tomSelectInstance.on('dropdown_open', function() {
+              document.getElementById('resultContainer').classList.add('hidden');
+              document.getElementById('detailContainer').classList.add('hidden');
+              document.getElementById('btnToggleDetail').innerHTML = 'Cek Detail Hasil Syarat Pembayaran <span class="text-indigo-400 ml-2">&darr;</span>';
+            });
+            document.getElementById('loadingText').classList.add('hidden');
+          } else {
+            selectEl.innerHTML = '<option value="">Gagal/Kosong</option>';
+            document.getElementById('loadingText').innerHTML = '<span class="text-rose-500">Gagal memuat data. Hubungi admin.</span>';
+          }
+        })
+        .catch(err => {
+          document.getElementById('loadingText').innerHTML = '<span class="text-rose-500">Koneksi API gagal.</span>';
+        });
+    });
+
+    function cariData() {
+      const nama = tomSelectInstance ? tomSelectInstance.getValue() : document.getElementById('searchInput').value;
+      if (!nama || nama.trim() === '') {
+        Swal.fire({ icon: 'warning', title: 'Tunggu dulu!', text: 'Silakan pilih nama Anda terlebih dahulu.', confirmButtonColor: '#4f46e5' });
+        return;
+      }
+
+      const btn = document.getElementById('btnCari');
+      const originalBtnText = btn.innerHTML;
+      const loadingTxt = document.getElementById('loadingText');
+      
+      btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+      btn.disabled = true;
+      if(tomSelectInstance) tomSelectInstance.disable(); 
+      
+      loadingTxt.innerHTML = `<svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Memproses data...</span>`;
+      loadingTxt.classList.remove('hidden');
+      
+      document.getElementById('resultContainer').classList.add('hidden');
+      document.getElementById('detailContainer').classList.add('hidden');
+      document.getElementById('btnToggleDetail').innerHTML = 'Cek Detail Hasil Syarat Pembayaran <span class="text-indigo-400 ml-2">&darr;</span>';
+
+      fetch(SCRIPT_URL + '?action=getDataByNama&nama=' + encodeURIComponent(nama))
+        .then(response => response.json())
+        .then(response => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          loadingTxt.classList.add('hidden');
+          if(tomSelectInstance) tomSelectInstance.enable();
+          
+          if (response.success) {
+            tampilkanHasil(response.data);
+          } else {
+            Swal.fire({ icon: 'error', title: 'Waduh...', text: response.message, confirmButtonColor: '#4f46e5' });
+          }
+        })
+        .catch(error => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          loadingTxt.classList.add('hidden');
+          if(tomSelectInstance) tomSelectInstance.enable();
+          Swal.fire({ icon: 'error', title: 'Error Server', text: 'Terjadi kendala jaringan.', confirmButtonColor: '#4f46e5' });
+        });
+    }
+
+    function tampilkanHasil(data) {
+      document.getElementById('r_namaSingkat').innerText = data.namaMitra;
+      document.getElementById('r_jabatan').innerText = data.kedudukan;
+
+      const statusBox = document.getElementById('statusBox');
+      const statusIcon = document.getElementById('statusIcon');
+      const statusTitle = document.getElementById('statusTitle');
+      const statusMessage = document.getElementById('statusMessage');
+      const btnLinkBerkas = document.getElementById('btnLinkBerkas');
+      const boxKeterangan = document.getElementById('boxKeterangan');
+
+      const sPembayaran = (data.syaratPembayaran || "").toString().trim().toUpperCase();
+      const korcamName = data.korcam || "Admin/Korcam";
+
+      // Reset Styles
+      statusBox.className = 'p-6 rounded-3xl mb-4 text-center border relative overflow-hidden animate-fade-in shadow-sm';
+      btnLinkBerkas.classList.add('hidden');
+      boxKeterangan.classList.add('hidden');
+
+      // Logika Utama Berdasarkan "Syarat Pembayaran Termin 2"
+      if (sPembayaran === "MEMENUHI SYARAT") {
+        statusBox.classList.add('bg-emerald-50', 'border-emerald-200');
+        statusIcon.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>'; 
+        statusIcon.className = 'mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3 text-white shadow-lg bg-emerald-500 shadow-emerald-200';
+        statusTitle.innerText = 'MEMENUHI SYARAT';
+        statusTitle.className = 'text-xl font-black uppercase tracking-wide mb-2 text-emerald-800';
+        statusMessage.className = 'text-sm leading-relaxed font-medium px-2 text-emerald-700';
+        statusMessage.innerHTML = "Selamat! Anda layak untuk pembayaran Termin II.";
+        
+        // Show Link & Keterangan
+        btnLinkBerkas.classList.remove('hidden');
+        boxKeterangan.classList.remove('hidden');
+        document.getElementById('d_keterangan').innerText = data.ketTermin2 || "-";
+        document.getElementById('d_tglBerkas').innerText = data.tglTermin2 || "Belum ditentukan";
+        
+      } else if (sPembayaran === "APPROVE KORCAM") {
+        statusBox.classList.add('bg-amber-50', 'border-amber-200');
+        statusIcon.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'; 
+        statusIcon.className = 'mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3 text-white shadow-lg bg-amber-500 shadow-amber-200';
+        statusTitle.innerText = 'MENUNGGU PERSETUJUAN'; 
+        statusTitle.className = 'text-xl font-black uppercase tracking-wide mb-2 text-amber-800';
+        statusMessage.className = 'text-sm leading-relaxed font-medium px-2 text-amber-700';
+        statusMessage.innerHTML = `Proses layak bayar masih dalam proses persetujuan Korcam. Silakan hubungi Korcam Anda <b>(${korcamName})</b>.`;
+      
+      } else { // TIDAK MEMENUHI SYARAT atau Lainnya
+        statusBox.classList.add('bg-rose-50', 'border-rose-200');
+        statusIcon.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>'; 
+        statusIcon.className = 'mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-3 text-white shadow-lg bg-rose-500 shadow-rose-200';
+        statusTitle.innerText = 'TIDAK MEMENUHI SYARAT';
+        statusTitle.className = 'text-xl font-black uppercase tracking-wide mb-2 text-rose-800';
+        statusMessage.className = 'text-sm leading-relaxed font-medium px-2 text-rose-700';
+        statusMessage.innerHTML = "Mohon maaf, capaian Anda saat ini belum memenuhi kriteria pembayaran Termin II. Cek detail syarat di bawah.";
+      }
+
+      // Render Identitas & Rekening
+      document.getElementById('d_kecamatan').innerText = data.kecamatan;
+      document.getElementById('d_bank').innerText = data.bank;
+      document.getElementById('d_noRek').innerText = data.noRek;
+      document.getElementById('d_namaRek').innerText = data.namaRek;
+
+      // Styling untuk list rincian syarat
+      const styleSyaratListItem = (elementId, value) => {
+        const el = document.getElementById(elementId);
+        const valUpper = value.toString().trim().toUpperCase();
+        el.innerText = value;
+        if(valUpper === "MEMENUHI SYARAT" || valUpper === "SESUAI") {
+            el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-200';
+        } else if(valUpper === "APPROVE KORCAM" || valUpper.includes("PROSES")) {
+            el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-amber-100 text-amber-700 border border-amber-200';
+        } else {
+            el.className = 'font-bold text-[11px] px-2.5 py-1 rounded-md bg-rose-100 text-rose-700 border border-rose-200';
+        }
+      };
+      
+      styleSyaratListItem('d_syaratDraft', data.syaratDraft);
+      styleSyaratListItem('d_syaratMuatan', data.syaratMuatan);
+      styleSyaratListItem('d_syaratSls', data.syaratSls);
+      styleSyaratListItem('d_syaratKorcam', data.syaratKorcam);
+
+      document.getElementById('resultContainer').classList.remove('hidden');
+    }
+
+    function toggleDetail() {
+      const detail = document.getElementById('detailContainer');
+      const btn = document.getElementById('btnToggleDetail');
+      if (detail.classList.contains('hidden')) {
+        detail.classList.remove('hidden');
+        btn.innerHTML = '<span class="text-slate-400 mr-2">&uarr;</span> Sembunyikan Rincian Syarat';
+      } else {
+        detail.classList.add('hidden');
+        btn.innerHTML = 'Cek Detail Hasil Syarat Pembayaran <span class="text-indigo-400 ml-2">&darr;</span>';
+      }
+    }
+  </script>
+</body>
+</html>
