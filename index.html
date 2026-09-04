@@ -88,32 +88,12 @@
         <p id="statusMessage" class="text-sm leading-relaxed font-medium px-2">Message here</p>
       </div>
 
-      <!-- Detail Keterangan (Hanya muncul jika Memenuhi Syarat) -->
-      <div id="boxKeterangan" class="hidden glass-card border-2 border-indigo-100 rounded-2xl p-5 mb-4 shadow-sm animate-fade-in">
-        <div class="mb-4">
-          <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Keterangan Termin II</span>
-          <span id="d_keterangan" class="font-semibold text-slate-700 leading-relaxed block bg-indigo-50/50 p-3 rounded-lg border border-indigo-50">-</span>
-        </div>
-        <div>
-          <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Tanggal Penandatanganan Berkas</span>
-          <span id="d_tglBerkas" class="font-bold text-emerald-700 text-lg block">-</span>
-        </div>
-      </div>
-
-      <!-- Link Berkas (Hanya muncul jika Memenuhi Syarat) -->
-      <div id="btnLinkBerkas" class="hidden mb-4 animate-fade-in">
-        <a href="http://s.bps.go.id/buktifasihse26lobar" target="_blank" class="inline-flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-          Klik link ini untuk melengkapi berkas Termin II
-        </a>
-      </div>
-
       <!-- Tombol Toggle Detail -->
       <button onclick="toggleDetail()" id="btnToggleDetail" class="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3.5 rounded-2xl hover:bg-slate-50 transition-all mb-4 shadow-sm animate-fade-in flex items-center justify-center gap-2">
         Cek Detail Hasil Syarat Pembayaran <span class="text-indigo-400">&darr;</span>
       </button>
 
-      <!-- Rincian Syarat Detail Container -->
+      <!-- Rincian Syarat Detail Container (Dibuka saat klik cek detail) -->
       <div id="detailContainer" class="hidden pb-12 space-y-4">
         
         <!-- Info Rekening -->
@@ -152,14 +132,32 @@
           </div>
         </div>
 
+        <!-- Detail Keterangan (Hanya muncul jika Memenuhi Syarat & Pindah Kesini) -->
+        <div id="boxKeterangan" class="hidden glass-card border-2 border-indigo-100 rounded-2xl p-5 shadow-sm animate-fade-in">
+          <div class="mb-4">
+            <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Keterangan Termin II</span>
+            <span id="d_keterangan" class="font-semibold text-slate-700 leading-relaxed block bg-indigo-50/50 p-3 rounded-lg border border-indigo-50">-</span>
+          </div>
+          <div>
+            <span class="text-indigo-800 block text-xs uppercase tracking-wider font-bold mb-1">Tanggal Penandatanganan Berkas</span>
+            <span id="d_tglBerkas" class="font-bold text-emerald-700 text-lg block">-</span>
+          </div>
+        </div>
+
+        <!-- Link Berkas (Hanya muncul jika Memenuhi Syarat & Pindah Kesini) -->
+        <div id="btnLinkBerkas" class="hidden animate-fade-in mt-2">
+          <a href="http://s.bps.go.id/buktifasihse26lobar" target="_blank" class="inline-flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Klik link ini untuk melengkapi berkas Termin II
+          </a>
+        </div>
+
       </div>
     </div>
   </div>
 
   <script>
-    // =====================================================================
     // URL WEB APP GOOGLE APPS SCRIPT SUDAH DIMASUKKAN DI SINI
-    // =====================================================================
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycwMTTDll8bC8u3ITQ2ct5ZelWvehROii0lW7CY9qWujWC0tElSO_WkRrztLRxoaZk/exec';
     
     let tomSelectInstance = null;
@@ -269,7 +267,7 @@
         statusMessage.className = 'text-sm leading-relaxed font-medium px-2 text-emerald-700';
         statusMessage.innerHTML = "Selamat! Anda layak untuk pembayaran Termin II.";
         
-        // Show Link & Keterangan
+        // Show Link & Keterangan (sekarang berada di dalam detail container)
         btnLinkBerkas.classList.remove('hidden');
         boxKeterangan.classList.remove('hidden');
         document.getElementById('d_keterangan').innerText = data.ketTermin2 || "-";
